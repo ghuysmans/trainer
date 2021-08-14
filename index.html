@@ -69,7 +69,7 @@ async function play(filename) {
 			return f(x);
 		};
 		let ended = wrap(resolve);
-		let error = wrap(reject);
+		let error = ended; //there's already an error in the console
 		a.addEventListener('ended', ended);
 		a.addEventListener('error', error);
 		a.load();
