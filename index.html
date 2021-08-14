@@ -6,7 +6,7 @@
 <body>
 <div id="t"></div>
 <audio id="a" autoplay></audio>
-<button onclick="session(this, Number(prompt('Combien ?')))">Commencer</button>
+<button onclick="session(this, Number(prompt('Séries ?')), Number(prompt('Exercices ?')))">Commencer</button>
 <button id="p">||</button>
 <script>
 'use strict';
@@ -76,18 +76,22 @@ async function play(filename) {
 	});
 }
 
-async function session(b, n) {
-	if (!n)
+async function session(b, s, e) {
+	if (!s || !e)
 		return;
 	b.disabled = true;
-	for (let i = 1; i <= n; i++) {
-		let update = lbl => s => t.textContent = lbl + ' : ' + s;
-		await play('start.mp3');
-		await count_until(1, 0, update('Exercice ' + i));
-		if (i != n) {
-			await play('pause.mp3');
-			await count_until(0, 10, update('Repos'));
+	let update = lbl => s => t.textContent = lbl + ' : ' + s;
+	for (let i = 1; i <= s; i++) {
+		for (let j = 1; j <= e; j++) {
+			await play('start.mp3');
+			await count_until(1, 0, update('Série ' + i + ', exercice ' + j));
+			if (j != e) {
+				await play('change.mp3');
+				await count_until(0, 10, update('Changer'));
+			}
 		}
+		if (i != s)
+			await play('next.mp3');
 	}
 	await play('end.mp3');
 	if (b.textContent == 'Commencer')
