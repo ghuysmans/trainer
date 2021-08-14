@@ -1,0 +1,101 @@
+<html>
+<head>
+<meta charset="utf8">
+<title>Condition physique</title>
+</head>
+<body>
+<div id="t"></div>
+<audio id="a" autoplay></audio>
+<button onclick="session(this, Number(prompt('Combien ?')))">Commencer</button>
+<button id="p">||</button>
+<script>
+'use strict';
+function sleep(ms) {
+	return new Promise((resolve, reject) => {
+		setTimeout(() => {
+			resolve();
+		}, ms);
+	});
+}
+
+var p = document.getElementById('p');
+var t = document.getElementById('t');
+var a = document.getElementById('a');
+
+function pausable_sleep(ms) {
+	let start = new Date();
+	return new Promise((resolve, reject) => {
+		let pause = _ => {
+			clearTimeout(t);
+			ms -= new Date() - start;
+			p.removeEventListener('click', pause);
+			p.addEventListener('click', resume);
+		};
+		let resume = _ => {
+			p.removeEventListener('click', resume);
+			p.addEventListener('click', pause);
+			start = new Date();
+			schedule();
+		};
+		p.addEventListener('click', pause);
+		let t;
+		let schedule = () =>
+			t = setTimeout(() => {
+				p.removeEventListener('click', pause);
+				resolve();
+			}, ms);
+		schedule();
+	});
+}
+
+async function count_until(max_m, max_s, update) {
+	let fix = n => ('0' + n).slice(-2);
+	let m, s;
+	for (m = 0; m <= max_m; m++) {
+		for (s = 0; s < (m == max_m ? max_s : 60); s++) {
+			update(fix(m) + ':' + fix(s));
+			await pausable_sleep(1000);
+		}
+	}
+	update(fix(m - 1) + ':' + fix(s));
+}
+
+async function play(filename) {
+	return new Promise((resolve, reject) => {
+		a.src = filename;
+		let wrap = f => x => {
+			a.removeEventListener('ended', ended);
+			a.removeEventListener('error', error);
+			return f(x);
+		};
+		let ended = wrap(resolve);
+		let error = wrap(reject);
+		a.addEventListener('ended', ended);
+		a.addEventListener('error', error);
+		a.load();
+	});
+}
+
+async function session(b, n) {
+	if (!n)
+		return;
+	b.disabled = true;
+	for (let i = 1; i <= n; i++) {
+		let update = lbl => s => t.textContent = lbl + ' : ' + s;
+		await play('start.mp3');
+		await count_until(1, 0, update('Série ' + i));
+		if (i != n) {
+			await play('pause.mp3');
+			await count_until(0, 10, update('Repos'));
+		}
+	}
+	await play('end.mp3');
+	if (b.textContent == 'Commencer')
+		b.textContent = 'Recommencer';
+	else
+		b.textContent = "Je suis maso";
+	b.disabled = false;
+}
+</script>
+</body>
+</html>
