@@ -83,7 +83,7 @@ async function session(b, n) {
 	for (let i = 1; i <= n; i++) {
 		let update = lbl => s => t.textContent = lbl + ' : ' + s;
 		await play('start.mp3');
-		await count_until(1, 0, update('Série ' + i));
+		await count_until(1, 0, update('Exercice ' + i));
 		if (i != n) {
 			await play('pause.mp3');
 			await count_until(0, 10, update('Repos'));
